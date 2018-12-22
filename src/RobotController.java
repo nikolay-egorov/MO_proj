@@ -13,9 +13,10 @@ public class RobotController {
 
     private ArrayList<Node> path;
     private Point2D location;
-    private float F_m;
-    private float dt;
+    protected float F_m;
+    protected float dt;
     private int chromoLength;
+    protected boolean noWay;
     ArrayList<Pair<Point2D, Float>> noise_arr;
     Stack<Point2D> true_path;
     List<Robot> robots;
@@ -26,6 +27,7 @@ public class RobotController {
         noise_arr=new ArrayList<>();
         robots=new ArrayList<>();
         elite=new ArrayList<>();
+        noWay=false;
     }
 
 
@@ -33,7 +35,7 @@ public class RobotController {
         path.add( new Node(99,99,"NORMAL"));
         path.add( new Node(100,100,"NORMAL"));
         true_path =new Stack<>();
-        Collections.reverse(path);
+//        Collections.reverse(path);
         for (Node i:path){
             Point2D p=new Point2D.Float(i.getY()/100f,i.getX()/100f);
             true_path.add(p);
@@ -61,6 +63,10 @@ public class RobotController {
 
             f=new Finder();
             path = f.findPath(100,noise_arr);
+            if (path==null)
+                noWay=true;
+            if (noWay)
+                throw new Exception("No way found");
             true_path();
 
         }
@@ -71,14 +77,14 @@ public class RobotController {
 
     public void initRobots(int n){
         for (int i = 0; i <n ; i++) {
-            robots.add(i,new Robot(noise_arr,true_path,F_m,dt));
+            robots.add(i,new Robot(noise_arr,true_path,F_m,dt,false));
         }
     }
 
     public Robot newBot(Robot bot){
         int i=robots.indexOf(bot);
         robots.remove(i);
-        robots.add(i,new Robot(noise_arr,true_path,F_m,dt));
+        robots.add(i,new Robot(noise_arr,true_path,F_m,dt,false));
         robots.get(i).setChromoLength(chromoLength);
         return  robots.get(i);
 
@@ -89,17 +95,20 @@ public class RobotController {
         for (Robot r: robots){
             r.setChromoLength(chromoLength);
         }
+
+//        for (int i=1;i<elite.size();i++)
+//            elite.get(i).setChromoLength(chromoLength);
     }
 
 
-    public float getParam(){
-        return  FmDt;
+    public int geEtalonChromoLength(){
+        return  chromoLength;
     }
 
 
     public void initElite(int n) {
         for (int i = 0; i <n ; i++) {
-            elite.add(i,new Robot(noise_arr,true_path,F_m,dt));
+            elite.add(i,new Robot(noise_arr,true_path,F_m,dt,true));
         }
     }
 }

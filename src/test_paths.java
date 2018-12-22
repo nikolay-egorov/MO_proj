@@ -38,35 +38,47 @@ public class test_paths {
 //        }
 
         Stack<Point2D> tr_path=true_path(path);
-        boolean U_final=false,foundF_k=false;
+        boolean U_final=false,F_final=false;
         Vec2f f_k=new Vec2f(0,0);
         Vec2f U=new Vec2f(0,0);
         float radious=F_m*dt*dt;
         float U_x_final=0,U_y_final=0;
         int counter=0;
+        int penalty=0;
+        int [] penalty_ar=new int[path.size()];
+        Collections.reverse(tr_path);
+        int clear_run=0;
 //        while ((!pos.equals(target)&&!U_final)){
-        while ((pos.getX()<=0.98f||pos.getY()<0.98f)&&!U_final){
-            int k=checkIfPosib(pos,tr_path,U,radious,dt);
-            System.out.println("K is: "+k);
+        while (!(U_final && F_final)){
 
-            if(k!=-1){
-                f_k.set(((float) (tr_path.get(tr_path.size()-k-1).getX() )),(float)(tr_path.get(tr_path.size()-k-1).getY() ));
-                for (int i = 0; i < k-1; i++) {
-                    tr_path.pop();
-                }
+            int k=checkIfPosib(pos,tr_path,U,radious,dt,penalty );
+            if (U_final)
+                F_final=true;
+            if(k==tr_path.size()-1){
+                U_final=true;
+            }
+            System.out.println("K is: "+k);
+            if(k>=0){
+
+                f_k.set((float) ((1 / dt) * (((tr_path.get(k).getX() - pos.getX()) / dt) - U.x)), (float)( (1 / dt) * ((tr_path.get(k).getY() - pos.getY()) / dt - U.y)));
 
                 System.out.println("New acclereation is: "+ f_k);
+                clear_run++;
 
             }
             else{
-                radious-=0.07;
+                clear_run=0;
+                U_final=false;
+                F_final=false;
+                penalty+=k*(-1);
                 continue;
             }
-//            U=setU(f_k,U);
+            if(clear_run>=2)
+                penalty=0;
+            U=setU(f_k,U,dt);
 
-            U.set((float)(f_k.x - pos.getX()),(float)(f_k.y - pos.getY()));
             System.out.println("Speed is: "+U);
-            setPos(U,pos,dt);
+            pos=setPos(U,pos,dt);
             if(checkCollision(noise_arr,pos)){
                 System.out.println("DEAD!");
                // return;
@@ -74,65 +86,62 @@ public class test_paths {
 
             System.out.println("Pos is: "+ pos);
             counter++;
-            if(pos.getX()>0.98f||pos.getY()>0.98f){
-             //    U_x_final=(float)(1f - pos.getX())/dt;
-                 U_x_final=(float)(1f - pos.getX())/dt;
 
-             //    U_y_final=(float)(1f - pos.getY())/dt;
-                 U_y_final=(float)(1f - pos.getY())/dt;
-                if(U_x_final*U_x_final+U_y_final*U_y_final<=F_m*F_m)
-                    U_final=true;
-                else{
-                    radious-=0.07;
-                }
-            }
 
         }
 
-        U.set(U_x_final,U_y_final);
+
         System.out.println("Speed is: "+ U);
-        setPos(U,pos,dt);
+
         System.out.println("\n\nFinal!\nPos is: "+ pos);
-        counter++;
-        U.set((float)( pos.getX()-f_k.x ),(float)( pos.getY()- f_k.y  ));
-        System.out.println("Speed is: "+U);
+        System.out.println("Acceleration is: "+ f_k);
         System.out.println("Steps: "+counter);
 
     }
 
-    public static Vec2f setU(Vec2f curFdt, Vec2f  U ){
+    public static Vec2f setU(Vec2f f_k, Vec2f  U,float dt ){
 
 
-        U.x+=curFdt.x ;
-        U.y+=curFdt.y;
+        U.x+=f_k.x*dt ;
+        U.y+=f_k.y*dt ;
         if(U.x<0 &&U.y<0){
             U.x=U.y=0;
         }
         return U;
     }
 
-    public static void setPos(Vec2f U,Point2D C,float dt){
+    public static Point2D setPos(Vec2f U,Point2D C,float dt){
         float x= (float) (C.getX()+ dt*U.x);
         float y= (float) (C.getY()+ dt*U.y);
         C.setLocation(x,y);
+        return C;
     }
 
 
 
 
-    public static int checkIfPosib(Point2D current, Stack<Point2D> tr_path,Vec2f U,float r,float dt){
+
+    public static int checkIfPosib(Point2D current, Stack<Point2D> tr_path,Vec2f U,float r,float dt,int penalty ){
         int k=-1;
-        float x= (float) (current.getX()+U.x*dt);
-        float y= (float) (current.getY()+U.y*dt);
-     //   float r_n=F_m*dt*dt;
+        if(current.getX()==1&&current.getY()==1){
+            if (( - U.x*dt) * ( - U.x*dt) + ( - U.y*dt) * ( - U.y*dt) <= r * r){
+                return tr_path.size()-1;
+            }
+            else return k;
+        }
+
+        float x= (float) (current.getX()-U.x*dt);
+        float y= (float) (current.getY()-U.y*dt);
+
         for (int i=0;i<tr_path.size();i++){
             Point2D p=tr_path.get(i);
-            if ((p.getX() - x) * (p.getX() - x) + (p.getY() - y) * (p.getY() - y) <= r * r){
-                k++;
+            if ((p.getX() - current.getX() - U.x*dt) * (p.getX() - current.getX() - U.x*dt) + (p.getY() - current.getY() - U.y*dt) * (p.getY() - current.getY() - U.y*dt) <= r * r){
+                k=i;
 
             }
         }
-        return k;
+
+        return k-penalty;
     }
 
     public static Stack<Point2D> true_path(ArrayList<Node>path){

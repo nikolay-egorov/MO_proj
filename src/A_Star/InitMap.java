@@ -45,7 +45,7 @@ public class InitMap {
 
         }*/
         for (Pair<Point2D, Float> aNoise_arr : noise_arr) {
-            int r = (int) (aNoise_arr.getValue() * demension);
+            int r = (int) ((aNoise_arr.getValue()+0.01f) * demension);
             int x = (int) (aNoise_arr.getKey().getX() * demension);
             int y = (int) (aNoise_arr.getKey().getY() * demension);
             for (int i = x - r; i <= x + r; i++) {

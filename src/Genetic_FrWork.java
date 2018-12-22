@@ -61,36 +61,37 @@ public class Genetic_FrWork {
         return population;
     }
 
-    public Population initPopulationBySample(float Sample,int n){
+    public void initPopulationBySample(float Sample,int n){
         pattern=new ArrayList<>();
         for (int i = n; i >=1 ; i--) {
             pattern.add(Sample/i);
         }
-        population=new Population(this.populationSize);
 
-        return  population;
     }
 
     public Population runFirstGen(int n,RobotController controller){
         controller.initRobots(n);
-        controller.initElite(pattern.size());
-        int i ,chromoLength;
+        if (pattern!=null)
+            controller.initElite(pattern.size());
+        int i ,chromoLength=0;
+
         for (i = 0; i <pattern.size() ; i++) {
             controller.elite.get(i).startShow(pattern.get(i));
             System.out.println(i+ " Done!");
             if(i==0){
                 chromoLength=controller.elite.get(i).getEliteGene().length;
                 controller.setEtalonChromoLength(chromoLength);
-
+                population=new Population(this.populationSize,chromoLength);
+                population.setChromoLength(chromoLength);
             }
             int[] gene=controller.elite.get(i).getEliteGene();
             population.setIndivid(i,new Individ(gene));
         }
 
-        for (i=0;i<populationSize;i++){
-                population.setIndivid(i,new Individ(population.getIndivid(this.random.nextInt(pattern.size())).getChromosome()));
+        for (i=pattern.size();i<populationSize;i++){
+                population.setIndivid(i,new Individ(chromoLength,true));
         }
-        System.out.println("First gen is out!!");
+        System.out.println("First generation is out!!");
         return  population;
     }
 
@@ -104,18 +105,22 @@ public class Genetic_FrWork {
      *
      * @param individual
      *            the individual to evaluate
-     * @param bot
+     * @param controller
      *            simulation simple
      * @return double The fitness value for individual
      */
-    public double calcFitness(Individ individual, Robot bot,float param) {
+    public double calcFitness(Individ individual, int k,RobotController controller) {
         // Get individual's chromosome
         int[] chromosome = individual.getChromosome();
-        // Get fitness
-        bot.setGene(chromosome);
-        bot.run(param);
-//        bot=bot.run(param);
-        float fitness = bot.distOverMoves(new Point2D.Float(1,1));
+        Robot robot=new Robot(controller.noise_arr,controller.true_path,controller.F_m,controller.dt,false);
+        robot.setChromoLength(controller.geEtalonChromoLength());
+        for (int i=0;i<chromosome.length;i++)
+            robot.genes[i]=chromosome[i];
+//        for (int i=chromosome.length;i<robot.chromoLength;i++)
+//            robot.genes[i]=0;
+        controller.robots.set(k,robot.run(controller.FmDt));
+
+        float fitness = controller.robots.get(k).distOverMoves(new Point2D.Float(1,1));
 
         // Store fitness
         individual.setFitness(fitness);
@@ -148,7 +153,8 @@ public class Genetic_FrWork {
         // fitness
         int i=0;
         for (Individ individual : population.getIndivids()) {
-            populationFitness += this.calcFitness(individual, controller.newBot(controller.robots.get(i++)),controller.getParam());
+         //    populationFitness += this.calcFitness(individual, controller.newBot(controller.robots.get(i++)),controller.getParam());
+            populationFitness += this.calcFitness(individual, i++,controller);
         }
 
         population.setPopulationFitness(populationFitness);
@@ -166,6 +172,7 @@ public class Genetic_FrWork {
             return generations > max;
         //    return (population.getFittest(0).getFitness() <=-5f);
     }
+
 
     /**
      * Selects parent for crossover using tournament selection
@@ -282,7 +289,7 @@ public class Genetic_FrWork {
             // Apply crossover to this individual?
             if (this.crossoverRate > Math.random() && populationIndex >= this.elitismCount) {
                 // Initialize offspring
-                Individ offspring = new Individ(parent1.getChromosomeLength());
+                Individ offspring = new Individ(parent1.getChromosomeLength(),false);
 
                 // Find second parent
                 Individ parent2 = this.selectParent(population);
@@ -390,8 +397,8 @@ public class Genetic_FrWork {
     }
 
     public Point2D getFittestRobotLocation(Population population,RobotController controller){
-        Individ fittest = population.getFittest(populationSize-1);
-        float fit= (float) calcFitness(fittest,controller.robots.get(0),controller.getParam());
+        Individ fittest = population.getFittest(0);
+        float fit= (float) calcFitness(fittest,0,controller);
         return controller.robots.get(0).showLocation();
     }
 

@@ -1,6 +1,8 @@
 package Genetic_FW;
 
 
+import java.util.Random;
+
 public class Individ {
     private int[] chromosome;
     private double fitness = -1;
@@ -26,16 +28,21 @@ public class Individ {
      * @param chromosomeLength
      *            The length of the individuals chromosome
      */
-    public Individ(int chromosomeLength) {
+    public Individ(int chromosomeLength,boolean needRand) {
 
         this.chromosome = new int[chromosomeLength];
-        for (int gene = 0; gene < chromosomeLength; gene++) {
-            if (0.5 < Math.random()) {
-                this.setGene(gene, 1);
-            } else {
-                this.setGene(gene, 0);
+        Random random=new Random();
+        random.setSeed(1231);
+        if(needRand) {
+            for (int gene = 0; gene < chromosomeLength; gene++) {
+                if (0.5 < random.nextFloat()) {
+                    this.setGene(gene, 1);
+                } else {
+                    this.setGene(gene, 0);
+                }
             }
         }
+
 
     }
 

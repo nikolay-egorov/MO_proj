@@ -1,5 +1,7 @@
 package Genetic_FW;
 
+import java.awt.geom.Point2D;
+import java.util.Collections;
 import java.util.Random;
 import java.util.Arrays;
 import java.util.Comparator;
@@ -8,7 +10,8 @@ public class Population {
 
     private Individ population[];
     private double populationFitness = -1;
-
+    protected int chromoLength;
+    protected  Point2D location;
     /**
      * Initializes blank population of Individs
      */
@@ -28,12 +31,38 @@ public class Population {
         for (int individualCount = 0; individualCount < populationSize; individualCount++) {
             // Create an individual, initializing its chromosome to the given
             // length
-            Individ individual = new Individ(chromosomeLength);
+            Individ individual = new Individ(chromosomeLength,false);
             // Add individual to population
             this.population[individualCount] = individual;
         }
     }
 
+    public void setChromoLength(int length){
+        chromoLength=length;
+    }
+
+    public Point2D getBestLocation(){
+        return location;
+    }
+
+    public void setLocation(Point2D loc){
+        location=loc;
+    }
+
+    public Population unifyIndivids(){
+        Population population1=new Population(size());
+        int k=0;
+        for (Individ i:getIndivids()){
+            Individ newInd=new Individ(chromoLength,false);
+            for (int j=0;j<i.getChromosomeLength();j++)
+                newInd.setGene(j,i.getGene(j));
+            for (int j=i.getChromosomeLength();j<chromoLength;j++) {
+                newInd.setGene(j, 0);
+            }
+            population1.setIndivid(k++,i);
+        }
+        return population1;
+    }
     /**
      * Get individuals from the population
      */
@@ -72,6 +101,7 @@ public class Population {
         // Return the fittest Individ
         return this.population[offset];
     }
+
 
     /**
      * Set population's group fitness
