@@ -50,9 +50,9 @@ public class InitMap {
             int y = (int) (aNoise_arr.getKey().getY() * demension);
             for (int i = x - r; i <= x + r; i++) {
                 for (int j = y - r; j <= y + r; j++) {
-                    if ((i - x) * (i - x) + (j - y) * (j - y) <= r * r && i < 100 && x > 0 && j > 0 && j < 100) {
-                        Node n = new Node(i, j, "OBSTACLE");
-                        graph.setMapCell(new Point(i, j), n);
+                    if (((i - x) * (i - x) + (j - y) * (j - y) <= r * r ) && (i < demension && i > 0 && j > 0 && j < demension)) {
+                        Node n = new Node(j, i, "OBSTACLE");
+                        graph.setMapCell(new Point(j,i), n);
                     }
                 }
             }

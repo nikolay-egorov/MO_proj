@@ -32,12 +32,12 @@ public class RobotController {
 
 
     public void true_path( ){
-        path.add( new Node(99,99,"NORMAL"));
-        path.add( new Node(100,100,"NORMAL"));
+        path.add( new Node(999,999,"NORMAL"));
+        path.add( new Node(1000,1000,"NORMAL"));
         true_path =new Stack<>();
 //        Collections.reverse(path);
         for (Node i:path){
-            Point2D p=new Point2D.Float(i.getY()/100f,i.getX()/100f);
+            Point2D p=new Point2D.Float(i.getY()/1000f,i.getX()/1000f);
             true_path.add(p);
         }
     }
@@ -62,7 +62,7 @@ public class RobotController {
             }
 
             f=new Finder();
-            path = f.findPath(100,noise_arr);
+            path = f.findPath(1000,noise_arr);
             if (path==null)
                 noWay=true;
             if (noWay)

@@ -15,7 +15,7 @@ public class Finder {
         InitMap initMap =new InitMap();
         SquaredGraph graph = initMap.initMap(demension,noise_arr);
         ArrayList<Node> path = graph.executeAStar();
-         graph.printMap(path);
+//        graph.printMap(path);
         return  path;
     }
 

@@ -7,6 +7,11 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
+/**
+ * @author Not Me
+ */
+
+
 public class Genetic_FrWork {
     private int populationSize;
     private double mutationRate;
@@ -18,7 +23,7 @@ public class Genetic_FrWork {
         ONE_POINT_RECOMBINATION, TWO_POINT_RECOMBINATION, ELEMENTWISE_RECOMBINATION, ONE_ELEMENT_EXCHANGE
     }
 
-    public static final int OCTET_LENGTH = 62; // for 2f
+    public static final int OCTET_LENGTH = 64; // for 2f
     public static final int MASK_FOR_MOD = OCTET_LENGTH - 1;
     public static final int SHIFT_FOR_DIVISION;
     static {
